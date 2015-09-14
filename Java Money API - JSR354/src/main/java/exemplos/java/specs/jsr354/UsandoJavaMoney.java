@@ -45,7 +45,7 @@ public class UsandoJavaMoney {
 		// MonetaryAmount 
 		// -> Obtido por uma Fábrica (Factory)
 		MonetaryAmount valorEmReais = MonetaryAmounts.getDefaultAmountFactory()
-				.setNumber(new BigDecimal("1500.55"))
+				.setNumber(new BigDecimal("100"))
 				.setCurrency("BRL")
 				.create();
 		System.out.println("Reais: " + valorEmReais);
@@ -87,14 +87,12 @@ public class UsandoJavaMoney {
 		// Criando um Operador com recurso de Lambda do Java 8
 		// Com o uso do Java 7, seria possível criar uma Classe propria, 
 		// e implementar o que for desejado, pelo método "apply"
-		
-		double desconto = 0.2 ;
-		
-		MonetaryOperator operacaoDeDesconto = (MonetaryAmount valorEmMoeda) -> valorEmMoeda.multiply(desconto);
+		double descontoEmPorcentagem = 2;
+		MonetaryOperator operacaoDeDesconto = (MonetaryAmount valorEmMoeda) -> valorEmMoeda.multiply(1 - (descontoEmPorcentagem/100));
 		MonetaryAmount comDesconto = valorEmReais.with(operacaoDeDesconto); 
 		System.out.println("Valor com desconto: " + comDesconto);
 		
-		comDesconto = valorEmReais.with(Discount.of(desconto)); 
+		comDesconto = valorEmReais.with(Discount.of(descontoEmPorcentagem)); 
 		System.out.println("Minha própria classe de desconto:" + comDesconto);
 		
 		// Formatacao e apresentacao
@@ -117,11 +115,12 @@ public class UsandoJavaMoney {
 		
 
 		// Trabalhando com Câmbio e conversões
+		
 
 	}
 
 	//Exemplo de uma classe própria para representar um Desconto
-	private static final class Discount implements MonetaryOperator{
+	public static final class Discount implements MonetaryOperator{
 		private double percentage = 0;
 
 		private Discount(double percentage) {
@@ -138,7 +137,7 @@ public class UsandoJavaMoney {
 
 		@Override
 		public MonetaryAmount apply(MonetaryAmount t) {
-			return percentage <= 0 ? t : t.multiply(percentage);
+			return percentage <= 0 ? t : t.multiply(1 - percentage);
 		}
 	}
 }
