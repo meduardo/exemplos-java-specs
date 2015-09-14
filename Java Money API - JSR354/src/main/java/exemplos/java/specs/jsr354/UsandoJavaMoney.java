@@ -9,6 +9,12 @@ import javax.money.MonetaryAmount;
 import javax.money.MonetaryAmounts;
 import javax.money.MonetaryCurrencies;
 import javax.money.MonetaryOperator;
+import javax.money.MonetaryRounding;
+import javax.money.MonetaryRoundings;
+import javax.money.convert.CurrencyConversion;
+import javax.money.convert.ExchangeRate;
+import javax.money.convert.ExchangeRateProvider;
+import javax.money.convert.MonetaryConversions;
 import javax.money.format.MonetaryAmountFormat;
 import javax.money.format.MonetaryFormats;
 
@@ -45,7 +51,7 @@ public class UsandoJavaMoney {
 		// MonetaryAmount 
 		// -> Obtido por uma Fábrica (Factory)
 		MonetaryAmount valorEmReais = MonetaryAmounts.getDefaultAmountFactory()
-				.setNumber(new BigDecimal("100"))
+				.setNumber(new BigDecimal("99.999"))
 				.setCurrency("BRL")
 				.create();
 		System.out.println("Reais: " + valorEmReais);
@@ -77,11 +83,15 @@ public class UsandoJavaMoney {
 		valorEmReais.divide(2);
 		valorEmReais.multiply(3);
 		valorEmReais.add(valorEmReais);
+		valorEmReais.subtract(valorEmReais);
 
 		// Somar Reais em Dólares não pode ser feito! Exception!
 		//valorEmReais.add(valorEmDollar);
 
 		// -> Arredondamentos
+		MonetaryRounding arredondamento = MonetaryRoundings.getDefaultRounding();
+		valorEmReais = valorEmReais.with(arredondamento);
+		System.out.println("Valor em reais, com arredondamento padrão: " + valorEmReais);
 
 		// -> Criando Operacoes Customizadas
 		// Criando um Operador com recurso de Lambda do Java 8
@@ -111,12 +121,26 @@ public class UsandoJavaMoney {
 		MonetaryAmount obtidoComFormatoBR = formatoPadrao.parse("BRL 1.500,55");
 		System.out.println("Valor obtido com base na String de formato: " + obtidoComFormatoBR );
 
-		// Criando formato proprio
-		
+		// Trabalhando com taxas de Câmbio e conversões
+		CurrencyConversion conversao = MonetaryConversions.getConversion("USD");
+		MonetaryAmount reaisConvertidoParaDollar = valorEmReais.with(conversao);
+		System.out.println("Valor convertido para dólares: " + reaisConvertidoParaDollar);
 
-		// Trabalhando com Câmbio e conversões
+		// Provedor padrão de taxas de câmbio (CompoundRateProvider)
+		ExchangeRateProvider provedorDeCambio = MonetaryConversions.getExchangeRateProvider();
 		
-
+		// Taxa de Câmbio de Reais para Dóllar (padrao)
+		// taxa, traz consigo outras demais informações.
+		ExchangeRate taxa = provedorDeCambio.getExchangeRate("BRL", "USD");
+		CurrencyUnit moedaAlvo = taxa.getCurrency();
+		System.out.println("Moeda 'alvo' para a taxa de cambio:" + moedaAlvo);
+		
+		
+		// Obtendo um provedor de taxa de câmbio específica para o FMI
+		// Neste caso obtemos as informações especificamente do FMI.
+		ExchangeRateProvider fmiProvedorDeCambio = MonetaryConversions.getExchangeRateProvider("IMF");
+		fmiProvedorDeCambio.getExchangeRate("BRL", "USD");
+		
 	}
 
 	//Exemplo de uma classe própria para representar um Desconto
